@@ -3,9 +3,6 @@ import numpy as np
 #from sklearn import metrics
 
 def read_file(filename):
-    """
-    Reads a file and returns the data as a numpy array for the three classes
-    """
     return np.loadtxt(filename, skiprows=1)
 
 
@@ -50,15 +47,16 @@ train_file_neg = sys.argv[3]
 test_file_pos = sys.argv[4]
 test_file_neg = sys.argv[5]
 
-# Read training data
+# Read data
 train_pos = read_file(train_file_pos)
 train_neg = read_file(train_file_neg)
 test_pos = read_file(test_file_pos)
 test_neg = read_file(test_file_neg)
 
 # Centroids are just the mean of the NxD data along the first dimension (axis=0)
-centroid_A = np.mean(train_pos, axis=0)
-centroid_B = np.mean(train_neg, axis=0)
+centroid_A = np.average(train_pos, axis=0, weights = [1] * test_pos.shape[0])
+centroid_B = np.average(train_neg, axis=0, weights = [1] * test_pos.shape[0])
+# print test_pos.shape[0]
 
 # Lecture 4-5 slide 25: Compute 't' and 'w'
 W = (centroid_A - centroid_B)
