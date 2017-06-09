@@ -84,6 +84,9 @@ Y_pred = np.vstack(Y_pred)  # Convert from python list to Nx1 numpy vector
 # label vector (Y_true) and the predicted label vector (Y_pred)
 conf_mat = confusion_matrix(Y_true, Y_pred) # aka contingency table
 
+# print np.asarray(Y_true).reshape(-1)
+# print np.asarray(Y_pred).reshape(-1)
+
 # scikit-learn's in-built function can also compute the confusion matrix for us:
 # conf_mat = metrics.confusion_matrix(Y_true, Y_pred)
 
