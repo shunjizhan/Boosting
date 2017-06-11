@@ -53,9 +53,16 @@ train_neg = read_file(train_file_neg)
 test_pos = read_file(test_file_pos)
 test_neg = read_file(test_file_neg)
 
+N = (train_pos.shape[0] + train_neg.shape[0])
+weight = [1.0 / N] * N
+weight_pos = weight[0 : train_pos.shape[0]]
+weight_neg = weight[train_pos.shape[0] : ]
+print (weight_pos)
+print (weight_neg)
+
 # Centroids are just the mean of the NxD data along the first dimension (axis=0)
-centroid_A = np.average(train_pos, axis=0, weights = [1] * test_pos.shape[0])
-centroid_B = np.average(train_neg, axis=0, weights = [1] * test_pos.shape[0])
+centroid_A = np.average(train_pos, axis=0, weights = weight_pos)
+centroid_B = np.average(train_neg, axis=0, weights = weight_neg)
 # print test_pos.shape[0]
 
 # Lecture 4-5 slide 25: Compute 't' and 'w'
