@@ -37,7 +37,7 @@ def classifier_metrics(conf_mat, curr_class):
     error_rate = 1 - accuracy
     precision = tp / (tp + fp)
 
-    return tpr, fpr, accuracy, error_rate, precision
+    return tpr, fpr, accuracy, error_rate, precision, fn, fp
 
 def getAlpha(e):
     return 0.5 * np.log((1 - e) / e)
@@ -67,6 +67,7 @@ confidence = []
 W_all = []
 T_all = []
 while(x < T_max and error_rate < 0.5):
+    print("iteration {}:".format(x))
     x += 1
 
     weight_pos = weight[0 : train_pos.shape[0]]
@@ -85,7 +86,7 @@ while(x < T_max and error_rate < 0.5):
 
     # For each train data point, predict class label by comparing X.W-T and store it in Y_pred
     for X in train_data:
-        if (np.inner(X, W) - T) >= 0:
+        if (np.inner(X, W) - T) > 0:
             class_pred = 1
         else:
             class_pred = 0
@@ -106,8 +107,8 @@ while(x < T_max and error_rate < 0.5):
     # scikit-learn's in-built function can also compute the confusion matrix for us:
     # conf_mat = metrics.confusion_matrix(Y_true, Y_pred)
 
-    tpr_A, fpr_A, accuracy_A, error_A, precision_A = classifier_metrics(conf_mat, 1)
-    tpr_B, fpr_B, accuracy_B, error_B, precision_B = classifier_metrics(conf_mat, 0)
+    tpr_A, fpr_A, accuracy_A, error_A, precision_A, fn_A, fp_A = classifier_metrics(conf_mat, 1)
+    tpr_B, fpr_B, accuracy_B, error_B, precision_B, fn_B, fp_B = classifier_metrics(conf_mat, 0)
 
     # Compute metrics across the three classes
     tpr = (tpr_A + tpr_B) / 2
@@ -132,6 +133,12 @@ while(x < T_max and error_rate < 0.5):
             weight_new.append(weight[j] / (2 - (2 * error_rate)))
 
     weight = weight_new
+
+    print("Error = {}".format(error_rate))
+    print("Alpha = {}".format(alpha))
+    print("Factor to increase weights = {}".format(1.0 / 2 * error_rate))
+    print("Factor to decrease weights = {}".format(1.0 / (2 - 2 * error_rate)))
+    print("")
     # print confidence
     # print sum(weight)
     # print weight
@@ -150,7 +157,7 @@ for X in test_data:
         T = T_all[y]
         result += a * (np.inner(X, W) - T)
 
-    if  result >= 0:
+    if  result > 0:
         class_pred = 1
     else:
         class_pred = 0
@@ -171,8 +178,8 @@ conf_mat = confusion_matrix(Y_true, Y_pred) # aka contingency table
 # scikit-learn's in-built function can also compute the confusion matrix for us:
 # conf_mat = metrics.confusion_matrix(Y_true, Y_pred)
 
-tpr_A, fpr_A, accuracy_A, error_A, precision_A = classifier_metrics(conf_mat, 1)
-tpr_B, fpr_B, accuracy_B, error_B, precision_B = classifier_metrics(conf_mat, 0)
+tpr_A, fpr_A, accuracy_A, error_A, precision_A, fn_A, fp_A = classifier_metrics(conf_mat, 1)
+tpr_B, fpr_B, accuracy_B, error_B, precision_B, fn_B, fp_B = classifier_metrics(conf_mat, 0)
 
 # Compute metrics across the three classes
 tpr = (tpr_A + tpr_B) / 2
@@ -185,8 +192,9 @@ error_rate = 1 - accuracy
 
 
 # Print the results to console
-print("True positive rate = %.2f" % tpr)
-print("False positive rate = %.2f" % fpr)
-print("Error rate = %.2f" % error_rate)
-print("Accuracy = %.2f" % accuracy)
-print("Precision = %.2f" % precision)
+err = int(error_rate * 100)
+print("testing:")
+print("False positives = %d" %(fp_A + fp_B))
+print("False negatives = %d" %(fn_A + fn_B))
+print("Error rate = " + str(err) + "%")
+
